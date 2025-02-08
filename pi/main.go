@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/stianeikeland/go-rpio/v4"
+	"log/slog"
 	"log"
 	"time"
 	"sync"
@@ -37,21 +38,28 @@ func pollTcr(wg *sync.WaitGroup) {
 	defer wg.Done()
 	tcr, err := tcr.Open(1)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		return
 	}
 	defer tcr.Close()
+	slog.Info("polling tcr")
 	for {
+		time.Sleep(time.Second/2)
 		str, err := tcr.Read()
 		if err != nil {
-			log.Println(err)
+			slog.Warn(err.Error())
+			continue
+		} else if str == "" {
 			continue
 		}
 		id, err := hash.Validate(str)
+		if err != nil {
+			slog.Warn(err.Error())
+		}
 		if id > 0 {
 			switchOn()
-			log.Println(id)
+			slog.Info("qr code scanned", "id", id)
 		}
-		time.Sleep(time.Second/2)
 	}
 }
 
@@ -64,7 +72,7 @@ func pollButtons(wg *sync.WaitGroup) {
 	buttonPin.Detect(rpio.FallEdge) 
 	defer buttonPin.Detect(rpio.NoEdge)
 
-	log.Println("press a button")
+	slog.Info("polling buttons")
 
 	for {
 		if buttonPin.EdgeDetected() {
@@ -74,9 +82,19 @@ func pollButtons(wg *sync.WaitGroup) {
 	}
 }
 
-func runServer(wg *sync.WaitGroup) error {
+func runServer(wg *sync.WaitGroup) {
 	defer wg.Done()
-	return http.ListenAndServe(":8080", http.HandlerFunc(requestHandler))
+	slog.Info("server listening on :8080")
+	err := http.ListenAndServe(":8080", http.HandlerFunc(requestHandler))
+	if err != nil {
+		slog.Error(err.Error())
+	}
+}
+
+func requestHandler(w http.ResponseWriter, r *http.Request) {
+	switchOn()
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Request received"))
 }
 
 func switchOn() {
@@ -87,14 +105,9 @@ func switchOn() {
 		timer.Stop()
 	}
 
-	// Set a new debounce timer
 	timer = time.AfterFunc(5*time.Second, func() {
 		pin.Low()
 	})
 }
 
-func requestHandler(w http.ResponseWriter, r *http.Request) {
-	switchOn()
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Request received"))
-}
+
