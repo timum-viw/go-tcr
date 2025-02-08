@@ -6,6 +6,8 @@ import (
 	"time"
 	"sync"
 	"net/http"
+	"timum-viw/supercoop/tcr"
+	"timum-viw/supercoop/hash"
 )
 
 var (
@@ -24,10 +26,33 @@ func main() {
 	pin.Output()
 	pin.Low()
 
-	wg.Add(2)
+	wg.Add(3)
 	go runServer(&wg)
 	go pollButtons(&wg)
+	go pollTcr(&wg)
 	wg.Wait()
+}
+
+func pollTcr(wg *sync.WaitGroup) {
+	defer wg.Done()
+	tcr, err := tcr.Open(1)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer tcr.Close()
+	for {
+		str, err := tcr.Read()
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		id, err := hash.Validate(str)
+		if id > 0 {
+			switchOn()
+			log.Println(id)
+		}
+		time.Sleep(time.Second/2)
+	}
 }
 
 func pollButtons(wg *sync.WaitGroup) {
