@@ -16,7 +16,7 @@ func getHmacKey() []byte {
     return []byte(keyString)
 }
 
-// generate returns a string "<base64_integer>.<hmac_signature>"
+// returns a string "<base64_integer>.<hmac_signature>"
 func Generate(value uint32) string {
     b := make([]byte, 4)
     binary.BigEndian.PutUint32(b, value)
