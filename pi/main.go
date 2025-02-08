@@ -2,14 +2,10 @@ package main
 
 import (
 	"github.com/stianeikeland/go-rpio/v4"
-	"os"
-	"context"
 	"log"
 	"time"
 	"sync"
 	"net/http"
-	"golang.ngrok.com/ngrok"
-	"golang.ngrok.com/ngrok/config"
 )
 
 var (
@@ -20,21 +16,16 @@ var (
 )
 
 func main() {
-	// Open and map memory to access gpio, check for errors
 	if err := rpio.Open(); err != nil {
-		log.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
-
-	// Unmap gpio memory when done
 	defer rpio.Close()
 
-	// Set pin to output mode
 	pin.Output()
 	pin.Low()
 
 	wg.Add(2)
-	go runServer(context.Background(), &wg)
+	go runServer(&wg)
 	go pollButtons(&wg)
 	wg.Wait()
 }
@@ -58,18 +49,9 @@ func pollButtons(wg *sync.WaitGroup) {
 	}
 }
 
-func runServer(ctx context.Context, wg *sync.WaitGroup) error {
+func runServer(wg *sync.WaitGroup) error {
 	defer wg.Done()
-	listener, err := ngrok.Listen(ctx,
-		config.HTTPEndpoint(),
-		ngrok.WithAuthtokenFromEnv(),
-	)
-	if err != nil {
-		return err
-	}
-
-	log.Println("App URL is ", listener.URL())
-	return http.Serve(listener, http.HandlerFunc(requestHandler))
+	return http.ListenAndServe(":8080", http.HandlerFunc(requestHandler))
 }
 
 func switchOn() {
