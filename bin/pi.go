@@ -69,7 +69,7 @@ func pollButtons(wg *sync.WaitGroup) {
 	buttonPin := rpio.Pin(6)
 	buttonPin.Input()
 	buttonPin.PullUp()
-	buttonPin.Detect(rpio.RiseEdge) 
+	buttonPin.Detect(rpio.FallEdge) 
 	defer buttonPin.Detect(rpio.NoEdge)
 
 	slog.Info("polling buttons")

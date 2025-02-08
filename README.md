@@ -72,7 +72,7 @@ If you did not build the project on the Raspberry Pi itself, you have to copy th
 
 For the I2C communiction with the TCR the default port for SCL and SDA on a Raspberry Pi Zero W are used. Those are GPIO Pins 3 an 2. Connect the Pins to your TCR correspondingly.
 
-Button input is read from GPIO 6 on a falling edge. GPIO is internally pulled down so you have to pull it up to 3.3v to 
+Button input is read from GPIO 6 on a falling edge. GPIO is internally pulled up so you have to pull it down to GND to trigger. 
 
 ## Usage
 
