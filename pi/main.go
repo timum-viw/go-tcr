@@ -42,17 +42,17 @@ func main() {
 func pollButtons(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	buttonPin := rpio.Pin(26)
+	buttonPin := rpio.Pin(6)
 	buttonPin.Input()
 	buttonPin.PullUp()
-	buttonPin.Detect(rpio.FallEdge) // enable falling edge event detection
+	buttonPin.Detect(rpio.FallEdge) 
 	defer buttonPin.Detect(rpio.NoEdge)
 
 	log.Println("press a button")
 
 	for {
-		if pin.EdgeDetected() {
-			log.Println("button pressed")
+		if buttonPin.EdgeDetected() {
+			switchOn()
 		}
 		time.Sleep(time.Second / 2)
 	}
