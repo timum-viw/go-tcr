@@ -1,3 +1,5 @@
 .env
-supercoop
+go-tcr
+cli
+server
 *.png

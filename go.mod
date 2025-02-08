@@ -1,4 +1,4 @@
-module timum-viw/supercoop
+module timum-viw/go-tcr
 
 go 1.23.5
 

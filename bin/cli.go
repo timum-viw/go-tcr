@@ -4,7 +4,7 @@ import (
     "log"
     "os"
     "fmt"
-    "timum-viw/supercoop/qr"
+    "timum-viw/go-tcr/qr"
     "io/ioutil"
 )
 

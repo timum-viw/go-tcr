@@ -7,8 +7,8 @@ import (
 	"time"
 	"sync"
 	"net/http"
-	"timum-viw/supercoop/tcr"
-	"timum-viw/supercoop/hash"
+	"timum-viw/go-tcr/tcr"
+	"timum-viw/go-tcr/hash"
 )
 
 var (
@@ -75,8 +75,10 @@ func pollButtons(wg *sync.WaitGroup) {
 	slog.Info("polling buttons")
 
 	for {
+		slog.Info("polling button")
 		if buttonPin.EdgeDetected() {
-			switchOn()
+			slog.Info("Button pressed")
+			go switchOn()
 		}
 		time.Sleep(time.Second / 2)
 	}

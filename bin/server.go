@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
     "log"
-    "timum-viw/supercoop/qr"
+    "timum-viw/go-tcr/qr"
     "os"
 	"encoding/base64"
 	"html/template"

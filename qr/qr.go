@@ -2,7 +2,7 @@ package qr
 
 import (
     "github.com/skip2/go-qrcode"
-    "timum-viw/supercoop/hash"
+    "timum-viw/go-tcr/hash"
     "strconv"
     "fmt"
     "errors"
