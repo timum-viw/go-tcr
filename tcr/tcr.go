@@ -1,49 +1,60 @@
 package tcr
 
 import (
-	"log"
-	i2c "github.com/d2r2/go-i2c"
-	"time"
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/base64"
-	"encoding/binary"
-	"strings"
 	"errors"
+	"os"
+	"fmt"
+	"syscall"
+	"encoding/binary"
 )
 
+const (
+	I2C_SLAVE = 0x0703
+	TCR_ADDR = 0x0c
+)
 
-func Read() {
-    i2c, err := i2c.NewI2C(0x0c, 1)
-    if err != nil { log.Fatal(err) }
-    // Free I2C connection on exit
-    defer i2c.Close()
+type TCR struct {
+	f *os.File
+	buf []byte
+}
+
+func Open(bus int) (*TCR, error) {
+	f, err := os.OpenFile(fmt.Sprintf("/dev/i2c-%d", bus), os.O_RDWR, 0600)
+	if err != nil {
+		return nil, err
+	}
+	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, f.Fd(), I2C_SLAVE, uintptr(TCR_ADDR))
+	if errno != 0 {
+		f.Close()
+		return nil, errors.New("syscall failed")
+	}
     var buf = make([]byte, 256)
-    for {
-		time.Sleep(2 * time.Second)
-			_,err := i2c.ReadBytes(buf)
-		if(err != nil) {
-			log.Fatal(err)
-		}
-		// log.Printf("read %d bytes", n)
-		length := binary.LittleEndian.Uint16(buf[:2])
-		if length < 1 {
-			continue
-		}
-		if length > 254 {
-			log.Printf("invalid content length %d\n", length)
-			continue
-		}
-		log.Printf("content len: %d\n", length)
-		str := string(buf[2:2+length])
-		log.Println(len(str))
-		log.Println(str)
-		n, err := validateAndExtractInteger(str)
-		if err != nil {
-			log.Println(err)
-		} else {
-			log.Printf("decoded: %d \n", n)
-		}
-    }
+	v := &TCR{f: f, buf: buf}
+	return v, nil
+}
+
+func (v *TCR) Close() error {
+	return v.f.Close()
+}
+
+func (v *TCR) Read() (string, error) {
+	n, err := v.f.Read(v.buf)
+	if err != nil {
+		return "", err
+	}
+	if n < 1 {
+		return "", nil
+	}
+
+	length := binary.LittleEndian.Uint16(v.buf[:2])
+	if length < 1 {
+		return "", nil
+	}
+	if length > 254 {
+		return "", errors.New("invalid content length returned")
+	}
+	
+	str := string(v.buf[2:2+length])
+	return str, nil
 }
 
