@@ -8,18 +8,17 @@ import (
     "errors"
 )
 
-func Generate(input string) (string, error) {
+func Generate(input string) ([]byte, error) {
 	id64, err := strconv.ParseUint(input, 10, 32)
     if err != nil {
-        return "", errors.New(fmt.Sprintf("input not an unsigned integer (%v)", err))
+        return nil, errors.New(fmt.Sprintf("input not an unsigned integer (%v)", err))
     }
     encodedString := hash.Generate(uint32(id64))
     // fmt.Println("Encoded String:", encodedString)
 
-    filename := fmt.Sprintf("qrcode_%s.png", input)
-    err = qrcode.WriteFile(encodedString, qrcode.Medium, 256, filename)
+    png, err := qrcode.Encode(encodedString, qrcode.Medium, 256)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return filename, nil
+	return png, nil
 }

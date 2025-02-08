@@ -8,7 +8,6 @@ import (
 	"encoding/base64"
 	"html/template"
 	"net/http"
-	"io/ioutil"
 )
 
 const htmlTemplate = `
@@ -44,18 +43,12 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imagePath, err := qr.Generate(token)
+	png, err := qr.Generate(token)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Could not generate qr code (%v)", err), http.StatusBadRequest)
 		return
 	}
-	imgFile, err := ioutil.ReadFile(imagePath)
-	if err != nil {
-		http.Error(w, "Could not read image file", http.StatusInternalServerError)
-		return
-	}
-
-	encodedImage := base64.StdEncoding.EncodeToString(imgFile)
+	encodedImage := base64.StdEncoding.EncodeToString(png)
 
 	tmpl, err := template.New("html").Parse(htmlTemplate)
 	if err != nil {
