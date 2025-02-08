@@ -75,10 +75,8 @@ func pollButtons(wg *sync.WaitGroup) {
 	slog.Info("polling buttons")
 
 	for {
-		slog.Info("polling button")
 		if buttonPin.EdgeDetected() {
-			slog.Info("Button pressed")
-			go switchOn()
+			switchOn()
 		}
 		time.Sleep(time.Second / 2)
 	}
