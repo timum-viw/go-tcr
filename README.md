@@ -114,6 +114,16 @@ This will create a PNG file with the QR code, such as `qrcode_<id>.png`.
 When you scan a valid QR code using the Tiny Code Reader, the Raspberry Pi GPIO pin will be triggered for 5 seconds. You can also manually press the button connected to GPIO pin 6 to trigger the same behavior.
 
 
+### 5. Trigger via Webhook
+
+You can connect the local server listening on port 8080 to ngrok to make it accessible via the internet. 
+
+1. Generate a public-private-key pair on your device. Eg use 
+    `ssh-keygen -t ed25519`
+2. Add your **public** key to your Ngrok account. See online documentation on how to do that
+3. Open a ssh tunnel with the following command `ssh -R 443:localhost:8080 v2@connect.ngrok-agent.com http`
+4. GPIO 6 will now be triggerd when visiting the corresponding ngrok url.
+
 ## How It Works
 
 - The `pi.go` program interacts with the Tiny Code Reader to read QR codes.
